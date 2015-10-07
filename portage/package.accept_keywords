@@ -1,0 +1,6 @@
+=net-irc/weechat-9999 **
+=sys-devel/automake-wrapper-10 ~amd64
+=sys-devel/automake-1.15 ~amd64
+mail-mta/opensmtpd  ~amd64
+mail-filter/opensmtpd-extras ~amd64
+=sys-apps/finite-0.1 ~amd64

@@ -1,0 +1,42 @@
+# Don't use kernel modules.
+-*virtual/modutils
+
+# This is a headless server.
+-*sys-apps/kbd
+
+# This is also a static /dev server.
+-*virtual/dev-manager
+
+# Redundant/deprecated...
+-*net-misc/iputils
+-*sys-apps/net-tools
+# replaced by iproute2.
+*sys-apps/iproute2
+
+# Replace sysvinit by finite.
+*sys-apps/finite
+
+# Replace pkg-config by pkgconf.
+*dev-util/pkgconf
+
+# Replace man-db by man.
+*sys-apps/man
+
+# We use btrfs.
+-*sys-fs/e2fsprogs
+
+# To build kernels.
+*sys-devel/bc
+
+# A logger.
+*app-admin/metalog
+# A cron.
+*sys-process/bcron
+
+# Useful stuff.
+*app-portage/eix
+*app-portage/gentoolkit
+
+# Crypted sync.
+*app-crypt/gentoo-keys
+*app-arch/tarsync

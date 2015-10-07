@@ -1,0 +1,11 @@
+# Distributed under the terms of the GNU General Public License v2
+# $Header: /var/cvsroot/gentoo-x86/www-servers/uwsgi/files/uwsgi.confd-r3,v 1.1 2013/03/01 09:50:06 ultrabug Exp $
+
+UWSGI_USER=www
+UWSGI_GROUP=www
+UWSGI_EMPEROR_GROUP=www
+UWSGI_EMPEROR_PATH=/etc/uwsgi/vassals/*.ini
+
+# Additional options you might want to pass to uWSGI
+#
+UWSGI_EXTRA_OPTIONS='--ini /etc/uwsgi/uwsgi.conf'

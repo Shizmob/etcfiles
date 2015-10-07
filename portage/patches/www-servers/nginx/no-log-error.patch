@@ -1,0 +1,19 @@
+--- a/src/core/ngx_log.c	2015-05-08 23:27:42.000000000 +0200
++++ b/src/core/ngx_log.c	2015-05-08 23:28:03.000000000 +0200
+@@ -380,15 +380,6 @@
+                                     NGX_FILE_DEFAULT_ACCESS);
+ 
+     if (ngx_log_file.fd == NGX_INVALID_FILE) {
+-        ngx_log_stderr(ngx_errno,
+-                       "[alert] could not open error log file: "
+-                       ngx_open_file_n " \"%s\" failed", name);
+-#if (NGX_WIN32)
+-        ngx_event_log(ngx_errno,
+-                       "could not open error log file: "
+-                       ngx_open_file_n " \"%s\" failed", name);
+-#endif
+-
+         ngx_log_file.fd = ngx_stderr;
+     }
+ 
+

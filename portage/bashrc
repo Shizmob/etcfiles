@@ -1,0 +1,60 @@
+[ -z "${ROOT}" ] && export ROOT="/"
+[ -z "${PORTAGE_CONFIGROOT}" ] && export PORTAGE_CONFIGROOT="/"
+[ -z "${PORTAGE_TMPDIR}" ] && export PORTAGE_TMPDIR="/var/tmp/portage"
+
+BASEDIR="${PORTAGE_CONFIGROOT%/}/etc/portage/"
+AUTORSYNC_BASEDIR="${BASEDIR%/}/autorsync.d/${CATEGORY}/${PN}/"
+POSTINST_BASEDIR="${BASEDIR%/}/hooks.d/postinst"
+
+if ! type epatch_user >/dev/null 2>&1 ; then
+        epatch_user() {
+                [[ $# -ne 0 ]] && die "epatch_user takes no options"
+                local applied="${T}/epatch_user.log"
+                [[ -e ${applied} ]] && return 2
+                local EPATCH_SOURCE check base=${PORTAGE_CONFIGROOT%/}/etc/portage/patches
+                for check in ${CATEGORY}/{${P}-${PR},${P},${PN}}{,:${SLOT}}; do
+                        EPATCH_SOURCE=
+                        [[ ! -z ${CTARGET} ]] && EPATCH_SOURCE=${base%/}/${CTARGET}/${check}
+                        [[ -r ${EPATCH_SOURCE} ]] || EPATCH_SOURCE=${base%/}/${CHOST}/${check}
+                        [[ -r ${EPATCH_SOURCE} ]] || EPATCH_SOURCE=${base%/}/${check}
+                        if [[ -d ${EPATCH_SOURCE} ]] ; then
+                                EPATCH_SOURCE=${EPATCH_SOURCE} \
+                                EPATCH_SUFFIX="patch" \
+                                EPATCH_FORCE="yes" \
+                                EPATCH_MULTI_MSG="Applying user patches from ${EPATCH_SOURCE} ..." \
+                                epatch
+                                echo "${EPATCH_SOURCE}" > "${applied}"
+                                return 0
+                        fi
+                done
+                echo "none" > "${applied}"
+                return 1
+        }
+fi
+
+post_src_prepare() {
+        if [[ -d "${AUTORSYNC_BASEDIR}" ]] ; then
+                echo ">>> Merging custom files (${AUTORSYNC_BASEDIR}) ..."
+                sleep 3
+                rsync -av ${AUTORSYNC_BASEDIR%/}/ ./ || exit 1
+                sleep 3
+        fi
+        if [[ -d "${S}" ]] ; then
+                pushd "${S}" >/dev/null 2>&1
+                epatch_user
+                popd >/dev/null 2>&1
+        else
+                epatch_user
+        fi
+}
+
+pkg_postinst() {                
+        if [[ -x "${POSTINST_BASEDIR%/}/all" ]] ; then
+                echo ">>> Running post-installation hook ${POSTINST_BASEDIR%/}/all"
+                ${POSTINST_BASEDIR%/}/all
+        fi      
+        if [[ -x "${POSTINST_BASEDIR%/}/${CATEGORY}/${PN}" ]] ; then
+                echo ">>> Running post-installation hook ${POSTINST_BASEDIR%/}/${CATEGORY}/${PN}"
+                ${POSTINST_BASEDIR%/}/${CATEGORY}/${PN}
+        fi
+}

@@ -1,0 +1,1 @@
+net-misc/strongswan	-gmp -strongswan_plugins_led -strongswan_plugins_lookip -strongswan_plugins_systime-fix -strongswan_plugins_unity -strongswan_plugins_vici dhcp curl

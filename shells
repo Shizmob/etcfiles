@@ -1,0 +1,4 @@
+# /etc/shells: valid login shells
+/bin/bash
+/bin/sh
+/bin/zsh

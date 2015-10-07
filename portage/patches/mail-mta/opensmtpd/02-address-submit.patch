@@ -1,0 +1,29 @@
+diff -ru opensmtpd-5.4.4p1/smtpd/lka_session.c opensmtpd-5.4.4p1-patched/smtpd/lka_session.c
+--- opensmtpd-5.4.4p1/smtpd/lka_session.c	2015-04-30 23:38:36.827460142 +0000
++++ opensmtpd-5.4.4p1-patched/smtpd/lka_session.c	2015-04-30 23:45:55.599486543 +0000
+@@ -514,8 +514,13 @@
+ 		ep->dest = lka_find_ancestor(xn, EXPAND_ADDRESS)->u.mailaddr;
+ 
+ 		/* set username */
+-		if ((xn->type == EXPAND_FILTER || xn->type == EXPAND_FILENAME)
+-		    && xn->alias) {
++		if (xn->type == EXPAND_ADDRESS) {
++			(void)strlcpy(ep->agent.mda.username,
++			    mailaddr_to_text(&xn->u.mailaddr),
++			    sizeof(ep->agent.mda.username));
++		}
++		else if ((xn->type == EXPAND_FILTER
++		        || xn->type == EXPAND_FILENAME) && xn->alias) {
+ 			(void)strlcpy(ep->agent.mda.username, SMTPD_USER,
+ 			    sizeof(ep->agent.mda.username));
+ 		}
+@@ -547,7 +552,8 @@
+ 			(void)strlcpy(ep->agent.mda.buffer, xn->u.buffer,
+ 			    sizeof ep->agent.mda.buffer);
+ 		}
+-		else if (xn->type == EXPAND_USERNAME) {
++		else if (xn->type == EXPAND_USERNAME
++		    || xn->type == EXPAND_ADDRESS) {
+ 			ep->agent.mda.method = rule->r_action;
+ 			(void)strlcpy(ep->agent.mda.buffer, rule->r_value.buffer,
+ 			    sizeof ep->agent.mda.buffer);

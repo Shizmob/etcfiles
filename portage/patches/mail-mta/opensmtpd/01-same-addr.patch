@@ -1,0 +1,57 @@
+diff -ru opensmtpd-5.4.4p1/smtpd/expand.c opensmtpd-5.4.4p1-patched/smtpd/expand.c
+--- opensmtpd-5.4.4p1/smtpd/expand.c	2014-12-24 10:46:55.000000000 +0000
++++ opensmtpd-5.4.4p1-patched/smtpd/expand.c	2015-04-30 22:58:12.088314245 +0000
+@@ -82,6 +82,14 @@
+ 		    expand);
+ 		node->sameuser = 1;
+ 	}
++	if (node->type == EXPAND_ADDRESS &&
++	    expand->parent &&
++	    expand->parent->type == EXPAND_ADDRESS &&
++	    mailaddr_match(&expand->parent->u.mailaddr, &node->u.mailaddr)) {
++		log_trace(TRACE_EXPAND, "expand: %p: setting sameaddr = 1",
++		    expand);
++		node->sameaddr = 1;
++	}
+ 
+ 	if (expand_lookup(expand, node)) {
+ 		log_trace(TRACE_EXPAND, "expand: %p: node found, discarding",
+@@ -143,6 +151,10 @@
+ 		return -1;
+ 	if (e1->sameuser > e2->sameuser)
+ 		return 1;
++	if (e1->sameaddr < e2->sameaddr)
++		return -1;
++	if (e1->sameaddr > e2->sameaddr)
++		return 1;
+ 	if (e1->mapping < e2->mapping)
+ 		return -1;
+ 	if (e1->mapping > e2->mapping)
+diff -ru opensmtpd-5.4.4p1/smtpd/lka_session.c opensmtpd-5.4.4p1-patched/smtpd/lka_session.c
+--- opensmtpd-5.4.4p1/smtpd/lka_session.c	2014-12-24 10:46:55.000000000 +0000
++++ opensmtpd-5.4.4p1-patched/smtpd/lka_session.c	2015-04-30 22:57:29.259311668 +0000
+@@ -294,6 +294,13 @@
+ 		    "[depth=%d]",
+ 		    xn->u.mailaddr.user, xn->u.mailaddr.domain, xn->depth);
+ 
++		if (xn->sameaddr) {
++			log_trace(TRACE_EXPAND, "expand: lka_expand: same "
++			    "address, submitting");
++			lka_submit(lks, rule, xn);
++			break;
++		}
++
+ 		/* Pass the node through the ruleset */
+ 		ep = lks->envelope;
+ 		ep.dest = xn->u.mailaddr;
+diff -ru opensmtpd-5.4.4p1/smtpd/smtpd.h opensmtpd-5.4.4p1-patched/smtpd/smtpd.h
+--- opensmtpd-5.4.4p1/smtpd/smtpd.h	2014-12-24 10:46:55.000000000 +0000
++++ opensmtpd-5.4.4p1-patched/smtpd/smtpd.h	2015-04-30 22:50:01.172284706 +0000
+@@ -474,6 +474,7 @@
+ 	TAILQ_ENTRY(expandnode)	tq_entry;
+ 	enum expand_type	type;
+ 	int			sameuser;
++	int			sameaddr;
+ 	int			alias;
+ 	struct rule	       *rule;
+ 	struct expandnode      *parent;

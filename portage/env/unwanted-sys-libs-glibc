@@ -1,0 +1,2 @@
+INSTALL_MASK="${INSTALL_MASK} /etc/gai.conf /etc/host.conf /etc/rmt"
+

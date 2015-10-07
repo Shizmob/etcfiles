@@ -1,0 +1,10 @@
+server {
+        listen [::]:80 ipv6only=off default_server;
+        server_name _;
+
+        if (-f /etc/nginx/sites.d/tls.$host)  {
+                rewrite ^/(.*)$ https://$host/$1 permanent;
+        }
+
+        include 'include/global.conf';
+}

@@ -1,0 +1,60 @@
+# Server.
+
+Port 444
+
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+SyslogFacility AUTH
+LogLevel INFO
+
+ClientAliveInterval 30
+ClientAliveCountMax 10
+TCPKeepAlive yes
+TcpRcvBufPoll yes
+
+
+# Authentication.
+
+LoginGraceTime 30s
+PermitRootLogin no
+StrictModes yes
+MaxAuthTries 3
+PrintMotd yes
+
+# Methods.
+PasswordAuthentication yes
+ChallengeResponseAuthentication yes
+PermitEmptyPasswords no
+RSAAuthentication yes
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+RhostsRSAAuthentication no
+HostbasedAuthentication no
+IgnoreUserKnownHosts yes
+IgnoreRhosts yes
+
+# Capabilities.
+AllowAgentForwarding no
+AllowTcpForwarding no
+X11Forwarding no
+PermitTTY yes
+PermitTunnel no
+#StrictChrootModes no
+UsePrivilegeSeparation sandbox
+UseDNS no
+
+
+# Subsystems.
+
+Subsystem       sftp    internal-sftp
+
+
+# Users and groups.
+
+AllowGroups sshusers sftpusers
+
+Match Group sftpusers
+        PermitTTY no
+        ForceCommand sftp

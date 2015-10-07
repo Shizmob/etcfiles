@@ -1,0 +1,14 @@
+diff --git a/libsbutil/sbutil.h b/libsbutil/sbutil.h
+index 993d7ad..2337c1a 100644
+--- a/libsbutil/sbutil.h
++++ b/libsbutil/sbutil.h
+@@ -23,7 +23,7 @@
+ #define BASHRC_NAME            "sandbox.bashrc"
+ #define TMPDIR                 "/tmp"
+ #define PORTAGE_TMPDIR         "/var/tmp/portage"
+-#define SANDBOX_LOG_LOCATION   "/var/log/sandbox"
++#define SANDBOX_LOG_LOCATION   "/var/log/portage/sandbox"
+ #define LOG_FILE_PREFIX        "/sandbox-"
+ #define DEBUG_LOG_FILE_PREFIX  "/sandbox-debug-"
+ #define LOG_FILE_EXT           ".log"
+
