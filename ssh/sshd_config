@@ -41,7 +41,7 @@ AllowTcpForwarding no
 X11Forwarding no
 PermitTTY yes
 PermitTunnel no
-#StrictChrootModes no
+StrictChrootModes no
 UsePrivilegeSeparation sandbox
 UseDNS no
 
@@ -57,4 +57,5 @@ AllowGroups sshusers sftpusers
 
 Match Group sftpusers
         PermitTTY no
+        ChrootDirectory %h
         ForceCommand sftp

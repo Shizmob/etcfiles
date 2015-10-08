@@ -1,0 +1,107 @@
+--- servconf.h 2014-07-13 04:31:02.955723741 +0000
++++ servconf.h 2014-07-13 04:31:51.123723635 +0000
+@@ -84,6 +84,7 @@
+ 	char   *xauth_location;	/* Location of xauth program */
+ 	int	permit_tty;	/* If false, deny pty allocation */
+ 	int     strict_modes;	/* If true, require string home dir modes. */
++	int	strict_chroot_modes;	/* If true, require strict chroot dir owner & modes */
+ 	int     tcp_keep_alive;	/* If true, set SO_KEEPALIVE. */
+ 	int	ip_qos_interactive;	/* IP ToS/DSCP/class for interactive */
+ 	int	ip_qos_bulk;		/* IP ToS/DSCP/class for bulk traffic */
+
+
+
+--- servconf.c 2014-07-13 04:32:58.543723486 +0000
++++ servconf.c 2014-07-13 04:35:00.763723216 +0000
+@@ -95,6 +95,7 @@
+ 	options->permit_tty = -1;
+ 	options->xauth_location = NULL;
+ 	options->strict_modes = -1;
++	options->strict_chroot_modes = -1;
+ 	options->tcp_keep_alive = -1;
+ 	options->log_facility = SYSLOG_FACILITY_NOT_SET;
+ 	options->log_level = SYSLOG_LEVEL_NOT_SET;
+@@ -228,6 +229,8 @@
+ 		options->permit_tty = 1;
+ 	if (options->strict_modes == -1)
+ 		options->strict_modes = 1;
++	if (options->strict_chroot_modes == -1)
++		options->strict_chroot_modes = 1;
+ 	if (options->tcp_keep_alive == -1)
+ 		options->tcp_keep_alive = 1;
+ 	if (options->log_facility == SYSLOG_FACILITY_NOT_SET)
+@@ -382,7 +385,7 @@
+ 	sListenAddress, sAddressFamily,
+ 	sPrintMotd, sPrintLastLog, sIgnoreRhosts,
+ 	sX11Forwarding, sX11DisplayOffset, sX11UseLocalhost,
+-	sPermitTTY, sStrictModes, sEmptyPasswd, sTCPKeepAlive,
++	sPermitTTY, sStrictModes, sStrictChrootModes, sEmptyPasswd, sTCPKeepAlive,
+ 	sPermitUserEnvironment, sUseLogin, sAllowTcpForwarding, sCompression,
+ 	sRekeyLimit, sAllowUsers, sDenyUsers, sAllowGroups, sDenyGroups,
+ 	sIgnoreUserKnownHosts, sCiphers, sMacs, sProtocol, sPidFile,
+@@ -482,6 +485,7 @@
+ 	{ "x11uselocalhost", sX11UseLocalhost, SSHCFG_ALL },
+ 	{ "xauthlocation", sXAuthLocation, SSHCFG_GLOBAL },
+ 	{ "strictmodes", sStrictModes, SSHCFG_GLOBAL },
++	{ "strictchrootmodes", sStrictChrootModes, SSHCFG_GLOBAL },
+ 	{ "permitemptypasswords", sEmptyPasswd, SSHCFG_ALL },
+ 	{ "permituserenvironment", sPermitUserEnvironment, SSHCFG_GLOBAL },
+ 	{ "uselogin", sUseLogin, SSHCFG_GLOBAL },
+@@ -1215,6 +1219,10 @@
+ 		intptr = &options->strict_modes;
+ 		goto parse_flag;
+ 
++	case sStrictChrootModes:
++		intptr = &options->strict_chroot_modes;
++		goto parse_flag;
++
+ 	case sTCPKeepAlive:
+ 		intptr = &options->tcp_keep_alive;
+ 		goto parse_flag;
+@@ -2089,6 +2097,7 @@
+ 	dump_cfg_fmtint(sX11UseLocalhost, o->x11_use_localhost);
+ 	dump_cfg_fmtint(sPermitTTY, o->permit_tty);
+ 	dump_cfg_fmtint(sStrictModes, o->strict_modes);
++	dump_cfg_fmtint(sStrictChrootModes, o->strict_chroot_modes);
+ 	dump_cfg_fmtint(sTCPKeepAlive, o->tcp_keep_alive);
+ 	dump_cfg_fmtint(sEmptyPasswd, o->permit_empty_passwd);
+ 	dump_cfg_fmtint(sPermitUserEnvironment, o->permit_user_env);
+
+
+
+--- session.c 2014-07-13 04:37:19.615722909 +0000
++++ session.c 2014-07-13 04:38:49.495722711 +0000
+@@ -1456,7 +1456,7 @@
+  * must be root-owned directories with strict permissions.
+  */
+ static void
+-safely_chroot(const char *path, uid_t uid)
++safely_chroot(const char *path, uid_t uid, int strict_chroot_modes)
+ {
+ 	const char *cp;
+ 	char component[MAXPATHLEN];
+@@ -1467,6 +1467,7 @@
+ 	if (strlen(path) >= sizeof(component))
+ 		fatal("chroot path too long");
+ 
++	if (strict_chroot_modes != 0) {
+ 	/*
+ 	 * Descend the path, checking that each component is a
+ 	 * root-owned directory with strict permissions.
+@@ -1494,6 +1495,7 @@
+ 			    cp == NULL ? "" : "component ", component);
+ 
+ 	}
++	}
+ 
+ 	if (chdir(path) == -1)
+ 		fatal("Unable to chdir to chroot path \"%s\": "
+@@ -1544,7 +1546,7 @@
+ 			    pw->pw_uid);
+ 			chroot_path = percent_expand(tmp, "h", pw->pw_dir,
+ 			    "u", pw->pw_name, (char *)NULL);
+-			safely_chroot(chroot_path, pw->pw_uid);
++			safely_chroot(chroot_path, pw->pw_uid, options.strict_chroot_modes);
+ 			free(tmp);
+ 			free(chroot_path);
+ 			/* Make sure we don't attempt to chroot again */
