@@ -1,0 +1,2 @@
+METALOG_OPTS=""
+FORMAT='$1 [$2] $3'

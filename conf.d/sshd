@@ -1,0 +1,3 @@
+# /etc/conf.d/sshd: config file for /etc/init.d/sshd
+SSHD_CONFDIR="/etc/ssh"
+SSHD_OPTS=""

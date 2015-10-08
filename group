@@ -1,0 +1,14 @@
+root:x:0:root
+tty:x:5:
+wheel:x:10:root
+users:x:100:
+portage:x:250:portage
+nogroup:x:65533:
+nobody:x:65534:
+sshd:x:22:
+sshusers:x:710:root
+trustedusers:x:701:portage
+nosockets:x:702:
+noclientsockets:x:703:
+noserversockets:x:704:
+services:x:711:
