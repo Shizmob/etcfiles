@@ -1,0 +1,8 @@
+#!/sbin/runscript
+: ${NTP_HOST:=pool.ntp.org}
+: ${NTP_FREQVAL:=0}
+
+command="/usr/bin/ntpclient"
+command_background=yes
+command_args="-f ${NTP_FREQVAL} -s -l -i 600 -g 10000 -h ${NTP_HOST}"
+pidfile="/run/ntpclient.pid"
