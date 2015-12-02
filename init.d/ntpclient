@@ -5,4 +5,10 @@
 command="/usr/bin/ntpclient"
 command_background=yes
 command_args="-f ${NTP_FREQVAL} -s -l -i 600 -g 10000 -h ${NTP_HOST}"
+command_user=nobody
+command_group=nogroup
 pidfile="/run/ntpclient.pid"
+
+start_pre() {
+	setcap CAP_SYS_TIME=eip "${command}"
+}
